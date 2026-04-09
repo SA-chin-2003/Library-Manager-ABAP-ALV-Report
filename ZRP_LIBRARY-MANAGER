@@ -1,0 +1,158 @@
+REPORT ZRP_LIBRARY_MANAGER.
+
+* Code for Ok
+DATA: OK_CODE TYPE SY-UCOMM,
+      SAVE_OK TYPE SY-UCOMM.
+
+* Declaring Table
+TABLES: ZLIBRARY_BOOKS.
+
+* Declaring Variables
+DATA: IS_BOOKS TYPE ZLIBRARY_BOOKS,
+      IT_BOOKS TYPE TABLE OF ZLIBRARY_BOOKS.
+
+* Providing Input Parameters
+START-OF-SELECTION.
+  PERFORM FETCH_DATA.
+  PERFORM DISPLAY_ALV.
+
+*&---------------------------------------------------------------------*
+*&      Form  FETCH_DATA
+*&---------------------------------------------------------------------*
+FORM FETCH_DATA.
+  SELECT * FROM ZLIBRARY_BOOKS INTO TABLE IT_BOOKS.
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV
+*&---------------------------------------------------------------------*
+FORM DISPLAY_ALV.
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      I_CALLBACK_PROGRAM       = SY-REPID
+      I_CALLBACK_PF_STATUS_SET = 'SET_STATUS'
+      I_CALLBACK_USER_COMMAND  = 'HANDLE_USER_COMMAND'
+      I_STRUCTURE_NAME         = 'ZLIBRARY_BOOKS'
+    TABLES
+      T_OUTTAB                 = IT_BOOKS.
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+* Linking the GUI Status created in SE41
+*&---------------------------------------------------------------------*
+FORM SET_STATUS USING RT_EXTAB TYPE SLIS_T_EXTAB.
+  SET PF-STATUS 'STATUS_100'.   " ALV Toolbar Status
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+* Handle Button Clicks
+*&---------------------------------------------------------------------*
+FORM HANDLE_USER_COMMAND USING R_UCOMM LIKE SY-UCOMM
+                              RS_SELFIELD TYPE SLIS_SELFIELD.
+  CASE R_UCOMM.
+    WHEN 'ADD_BOOK'.
+      CLEAR ZLIBRARY_BOOKS.          " ← Clear screen fields before opening
+      CALL SCREEN 100.
+      PERFORM FETCH_DATA.
+      RS_SELFIELD-REFRESH = 'X'.
+
+    WHEN 'DELETE'.
+      READ TABLE IT_BOOKS INDEX RS_SELFIELD-TABINDEX INTO IS_BOOKS.
+      IF SY-SUBRC = 0.
+        PERFORM DELETE_RECORD.
+        PERFORM FETCH_DATA.
+        RS_SELFIELD-REFRESH = 'X'.
+      ELSE.
+        MESSAGE 'Please select a row first!' TYPE 'W'.
+      ENDIF.
+
+    WHEN '&IC1'.                     " Double Click
+      READ TABLE IT_BOOKS INDEX RS_SELFIELD-TABINDEX INTO IS_BOOKS.
+      IF SY-SUBRC = 0.
+        MESSAGE |You selected Book: { IS_BOOKS-TITLE }| TYPE 'I'.
+      ENDIF.
+
+    WHEN 'BACK'.
+      SET SCREEN 0. LEAVE SCREEN.
+
+    WHEN 'EXIT' OR 'CANCEL'.
+      LEAVE TO TRANSACTION 'SESSION_MANAGER'.
+
+  ENDCASE.
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+* Process Before Output - Screen 100
+*&---------------------------------------------------------------------*
+MODULE STATUS_0100 OUTPUT.
+  SET PF-STATUS 'STATUS_100'.   " ← Make sure SAVE button exists here
+  SET TITLEBAR 'T100'.
+ENDMODULE.
+
+*&---------------------------------------------------------------------*
+* Process After Input - Screen 100
+*&---------------------------------------------------------------------*
+MODULE USER_COMMAND_0100 INPUT.
+  SAVE_OK = OK_CODE.             " ← Save OK_CODE before clearing
+  CLEAR OK_CODE.                 " ← Clear immediately
+
+  CASE SAVE_OK.
+    WHEN 'SAVE'.
+      CLEAR IS_BOOKS.
+      MOVE-CORRESPONDING ZLIBRARY_BOOKS TO IS_BOOKS.   " ← Map screen fields
+      INSERT ZLIBRARY_BOOKS FROM IS_BOOKS.             " ← Correct INSERT syntax
+      IF SY-SUBRC = 0.
+        COMMIT WORK.                                   " ← CRITICAL: Save to DB
+        MESSAGE 'Book Saved Successfully!' TYPE 'S'.
+        LEAVE TO SCREEN 0.
+      ELSE.
+        ROLLBACK WORK.
+        MESSAGE 'Error: Book ID already exists!' TYPE 'E'.
+      ENDIF.
+
+    WHEN 'BACK' OR 'CANCEL'.
+      ROLLBACK WORK.
+      LEAVE TO SCREEN 0.
+
+    WHEN 'EXIT' OR 'CANCEL'.
+      LEAVE TO TRANSACTION 'SESSION_MANAGER'.
+
+  ENDCASE.
+
+ENDMODULE.
+
+*&---------------------------------------------------------------------*
+*&      Form  DELETE_RECORD
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM DELETE_RECORD.
+  DATA: LV_ANSWER TYPE C.
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR       = 'Confirm Delete'
+      TEXT_QUESTION  = 'Are you sure you want to delete this record?'
+      TEXT_BUTTON_1  = 'Yes'
+      TEXT_BUTTON_2  = 'No'
+      DEFAULT_BUTTON = '2'
+    IMPORTING
+      ANSWER         = LV_ANSWER.
+
+  IF LV_ANSWER = '1'.
+    DELETE ZLIBRARY_BOOKS FROM IS_BOOKS.
+    IF SY-SUBRC = 0.
+      COMMIT WORK.
+      MESSAGE 'Record Deleted Successfully!' TYPE 'S'.
+    ELSE.
+      ROLLBACK WORK.
+      MESSAGE 'Error: Could not delete record!' TYPE 'E'.
+    ENDIF.
+  ELSE.
+    MESSAGE 'Delete Cancelled!' TYPE 'I'.
+  ENDIF.
+
+ENDFORM.
