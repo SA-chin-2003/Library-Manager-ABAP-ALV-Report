@@ -1,5 +1,8 @@
 # 📚 SAP ABAP Library Manager
 
+![SAP ABAP](https://img.shields.io/badge/SAP-ABAP-008FD3?style=for-the-badge&logo=sap&logoColor=white)
+![Report Type](https://img.shields.io/badge/Report-ALV_Grid-success?style=for-the-badge)
+
 A custom Library Management System developed in SAP ABAP using 
 ALV Grid Display, Screen Painter, and custom GUI Status.
 
@@ -120,11 +123,18 @@ PROCESS AFTER INPUT.
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Developer
+**Sachidananda Mohanty**
 
-- **Name:** Your Name
-- **LinkedIn:** your-linkedin-url
-- **GitHub:** your-github-url
+Connect with me on [LinkedIn](https://linkedin.com/in/sachidananda-mohanty-2217as)  
+Check out more projects on [GitHub](https://github.com/SA-chin-2003)
+
+## Contributions are welcome!
+don't forget to give the credits
+
+## 📃 License
+
+This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
