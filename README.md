@@ -104,7 +104,7 @@ Below is the Input Screen of Library Manager Report:
 
 ![Input Screen](photos/Input_screen.png)
 
-Below is the Report Screen of Library Manager Report:
+The Main Report Screen of Library Manager Report:
 
 ![ALV Report Screen](photos/Report_Screen.png)
 ---
