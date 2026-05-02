@@ -100,13 +100,13 @@ PROCESS AFTER INPUT.
 ---
 
 ## 📸 Photos
+Below is the Input Screen of Library Manager Report:
 
-| Screen | Description |
-|--------|-------------|
-| ALV Grid | Main book list view |
-| Screen 100 | Add new book input form |
-| Delete Popup | Confirmation before delete |
+![Input Screen](photos/Input_screen.png)
 
+Below is the Report Screen of Library Manager Report:
+
+![ALV Report Screen](photos/Report_Screen.png)
 ---
 
 ## 📌 Transaction Codes Used
