@@ -40,7 +40,7 @@ SAP-ABAP-Library-Manager/
 │   └── ZRP_LIBRARY_MANAGER.abap       # Main Report Program
 │
 ├── docs/
-│   ├── screenshots/                    # UI Screenshots
+│   ├── photos/                    # UI Screenshots
 │   └── setup-guide.md                  # Step by step setup
 │
 └── README.md
@@ -99,7 +99,7 @@ PROCESS AFTER INPUT.
 
 ---
 
-## 📸 Screenshots
+## 📸 Photos
 
 | Screen | Description |
 |--------|-------------|
